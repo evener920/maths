@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>小学数学学习系统 · 人教版同步教练 + 240 应用题专题</title>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <div class="brand"><span class="logo">∑</span><span>小学数学学习系统</span></div>
+      <nav class="navlinks">
+        <a href="index.html" class="active">首页</a>
+        <a href="app.html">章节教练</a>
+        <a href="topics.html">应用题总览</a>
+        <a href="graph.html">知识图谱</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <h1>小学 1–6 年级数学，<span class="accent">系统学、专题练、有图谱</span></h1>
+      <p class="lead">人教版章节同步教练 + 240 个奥数/应用题专题系统归类（鸡兔同笼 · 行程 · 工程 · 植树 · 浓度 · 牛吃草…），参数化原创出题、每轮不重样，并配知识图谱与视频讲解入口。纯前端、零依赖、可离线。</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="app.html">▶ 开始章节教练</a>
+        <a class="btn btn-ghost" href="topics.html">📚 浏览应用题专题（240）</a>
+        <a class="btn btn-ghost" href="graph.html">🧭 查看知识图谱</a>
+      </div>
+
+      <div class="grades" id="grades"></div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="stat"><div class="num">6</div><div class="lab">覆盖年级（一至六年级）</div></div>
+      <div class="stat"><div class="num">240</div><div class="lab">奥数/应用题专题（系统归类）</div></div>
+      <div class="stat"><div class="num">120+</div><div class="lab">参数化题型引擎（每轮原创出题）</div></div>
+      <div class="stat"><div class="num">∞</div><div class="lab">错题复盘 + 间隔复习闭环</div></div>
+    </div>
+
+    <div class="note">💡 <b>关于视频</b>：本系统内置的是 SVG 配图与交互动图（非真人讲课）。每个应用题专题都提供了「📺 看视频讲解」外链按钮，可一键跳转到 B站 / 可汗学院搜索对应专题的真人/动画讲解视频，弥补开源项目不含真人视频的缺口。</div>
+
+    <section class="section">
+      <h2>四大模块</h2>
+      <p class="sub">打开即用，无需登录、无需 API Key</p>
+      <div class="cards">
+        <a class="card" href="app.html">
+          <div class="ic">📘</div>
+          <h3>章节同步教练</h3>
+          <p>人教版学段 → 年级/册 → 章，逐章练习、分步解析、错题自动入册与间隔复习。</p>
+          <div class="go">进入练习 →</div>
+        </a>
+        <a class="card" href="topics.html">
+          <div class="ic">🧩</div>
+          <h3>应用题专题系统整理</h3>
+          <p>240 个专题按「鸡兔同笼 / 行程 / 工程 / 植树 / 浓度 / 年龄 / 盈亏 / 和差倍…」归类，点专题即练，附视频入口。</p>
+          <div class="go">查看 240 专题 →</div>
+        </a>
+        <a class="card" href="graph.html">
+          <div class="ic">🧭</div>
+          <h3>知识图谱 / 课程地图</h3>
+          <p>6 年级主干 + 题型聚类 + 先修式连线，一眼看清知识脉络，点击直达专题。</p>
+          <div class="go">打开知识图谱 →</div>
+        </a>
+        <a class="card" href="topics.html#video">
+          <div class="ic">📺</div>
+          <h3>视频讲解入口</h3>
+          <p>每个专题一键搜索 B站 / 可汗学院对应讲解视频，动画 + 真人讲解随心看。</p>
+          <div class="go">找视频讲解 →</div>
+        </a>
+      </div>
+    </section>
+
+    <div class="foot">
+      衍生自开源项目 <a href="https://github.com/kenowong/pep-math-coach" target="_blank" rel="noopener">kenowong/pep-math-coach</a>（MIT）。奥数专题仅收录目录级信息，题目由参数化引擎原创生成。原项目不含真人教学视频，视频入口为外部搜索跳转。
+    </div>
+  </div>
+
+  <script>
+    // 年级快捷入口
+    var grades = [
+      {n:1,t:"一年级"},{n:2,t:"二年级"},{n:3,t:"三年级"},
+      {n:4,t:"四年级"},{n:5,t:"五年级"},{n:6,t:"六年级"}
+    ];
+    var box = document.getElementById("grades");
+    grades.forEach(function(g){
+      var a = document.createElement("a");
+      a.className = "grade-chip";
+      a.href = "topics.html?grade=" + g.n;
+      a.innerHTML = g.n + "<small>" + g.t + "</small>";
+      box.appendChild(a);
+    });
+  </script>
+</body>
+</html>

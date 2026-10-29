@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>应用题专题系统整理 · 240 专题</title>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <div class="brand"><span class="logo">∑</span><span>小学数学学习系统</span></div>
+      <nav class="navlinks">
+        <a href="index.html">首页</a>
+        <a href="app.html">章节教练</a>
+        <a href="topics.html" class="active">应用题总览</a>
+        <a href="graph.html">知识图谱</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="section" style="padding-bottom:0">
+      <h2>应用题专题系统整理</h2>
+      <p class="sub">240 个专题按题型归类 · 点专题即练 · 每专题可一键搜视频讲解</p>
+
+      <div class="toolbar">
+        <input id="search" class="search" placeholder="搜索专题名，如：鸡兔同笼 / 行程 / 工程…" />
+      </div>
+      <div class="filter-tabs" id="gradeTabs"></div>
+    </section>
+
+    <div id="cats"></div>
+
+    <div class="foot">
+      数据来源：开源项目奥数教材专题骨架（陕西人民教育出版社《小学奥数举一反三》目录级信息，6 年级 × 40 周 = 240 专题）。题目由参数化引擎原创生成。「看视频」为外部搜索跳转，非本系统内置内容。
+    </div>
+  </div>
+
+  <!-- 仅引入专题骨架数据，提供 window.OLY_SYLLABUS -->
+  <script src="js/oly-syllabus.js"></script>
+  <script src="cats.js"></script>
+  <script>
+  (function(){
+    var GRADES = ["一年级","二年级","三年级","四年级","五年级","六年级"];
+    var SYL = window.OLY_SYLLABUS || {};
+
+    // 类别体系（cats.js）：按顺序匹配；命中即归类，最后兜底“综合与其他”
+    var CATS = window.CATS, OTHER = window.CAT_OTHER;
+
+    function classify(name){
+      for(var i=0;i<CATS.length;i++){
+        for(var j=0;j<CATS[i].kw.length;j++){
+          if(name.indexOf(CATS[i].kw[j])>=0) return CATS[i];
+        }
+      }
+      return OTHER;
+    }
+
+    // 构造扁平列表：{grade, gk, w, name, cat}
+    var list = [];
+    GRADES.forEach(function(g, gi){
+      var gk = String(gi+1);
+      (SYL[g]||[]).forEach(function(it){
+        list.push({grade:g, gk:gk, w:it.w, name:it.t, cat:classify(it.t)});
+      });
+    });
+
+    // 状态
+    var params = new URLSearchParams(location.search);
+    var state = { grade: parseInt(params.get("grade"),10) || 0, cat: params.get("cat") || "", q:"" };
+
+    // 年级筛选 tabs
+    var tabs = document.getElementById("gradeTabs");
+    var tabDefs = [{n:0,t:"全部"}].concat(GRADES.map(function(g,i){return {n:i+1,t:g};}));
+    tabDefs.forEach(function(d){
+      var el = document.createElement("button");
+      el.className = "tab" + (state.grade===d.n?" active":"");
+      el.textContent = d.t;
+      el.onclick = function(){ state.grade=d.n; render(); };
+      tabs.appendChild(el);
+    });
+
+    // 搜索
+    var search = document.getElementById("search");
+    search.addEventListener("input", function(){ state.q = search.value.trim(); render(); });
+
+    function videoUrl(name){
+      return "https://search.bilibili.com/all?keyword=" + encodeURIComponent("小学奥数 "+name);
+    }
+    function khanUrl(name){
+      return "https://www.khanacademy.org/search?page_search_query=" + encodeURIComponent(name);
+    }
+
+    function render(){
+      // 更新 tab active
+      Array.prototype.forEach.call(tabs.children, function(c,i){
+        c.className = "tab" + (state.grade===tabDefs[i].n?" active":"");
+      });
+      var cats = document.getElementById("cats");
+      cats.innerHTML = "";
+      var q = state.q;
+      CATS.concat([OTHER]).forEach(function(cat){
+        // 若指定类别，仅渲染该类别
+        if(state.cat && cat.name!==state.cat) return;
+        var items = list.filter(function(x){
+          if(x.cat!==cat) return false;
+          if(state.grade && x.gk!==String(state.grade)) return false;
+          if(q && x.name.indexOf(q)<0 && x.grade.indexOf(q)<0) return false;
+          return true;
+        });
+        if(!items.length) return;
+        var sec = document.createElement("div");
+        sec.className = "cat";
+        var head = document.createElement("div");
+        head.className = "cat-head";
+        head.innerHTML = '<span class="dot" style="background:'+cat.color+'"></span>'+
+          '<h3>'+cat.name+'</h3><span class="cnt">'+items.length+' 个专题</span>';
+        sec.appendChild(head);
+        var grid = document.createElement("div");
+        grid.className = "chips";
+        items.forEach(function(x){
+          var c = document.createElement("div");
+          c.className = "chip";
+          c.innerHTML =
+            '<div class="name">'+x.name+'</div>'+
+            '<div class="meta">'+x.grade+' · 第 '+x.w+' 周</div>'+
+            '<div class="row">'+
+              '<a class="mini practice" href="app.html#/oly/p/'+x.gk+'/g'+x.gk+'w'+x.w+'" target="_blank">▶ 开始练习</a>'+
+              '<a class="mini video" href="'+videoUrl(x.name)+'" target="_blank" rel="noopener">📺 B站</a>'+
+              '<a class="mini video" href="'+khanUrl(x.name)+'" target="_blank" rel="noopener">📺 可汗</a>'+
+            '</div>';
+          grid.appendChild(c);
+        });
+        sec.appendChild(grid);
+        cats.appendChild(sec);
+      });
+      if(!cats.children.length){
+        cats.innerHTML = '<div class="empty">没有匹配的专题，换个关键词试试。</div>';
+      }
+    }
+    render();
+  })();
+  </script>
+</body>
+</html>

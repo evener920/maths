@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>知识图谱 · 课程地图</title>
+  <link rel="stylesheet" href="site.css" />
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap">
+      <div class="brand"><span class="logo">∑</span><span>小学数学学习系统</span></div>
+      <nav class="navlinks">
+        <a href="index.html">首页</a>
+        <a href="app.html">章节教练</a>
+        <a href="topics.html">应用题总览</a>
+        <a href="graph.html" class="active">知识图谱</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="section" style="padding-bottom:0">
+      <h2>知识图谱 / 课程地图</h2>
+      <p class="sub">小学 1–6 年级主干 + 应用题题型聚类 · 点击年级或类别，直达专题练习</p>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <div class="graph-wrap">
+      <svg id="map" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="foot">
+      图谱由真实教材专题大纲（240 专题）自动聚合生成：主干为 6 个年级，旁支为各年级出现的应用题题型类别，连线示意知识随年级递进。点击任意节点跳转到「应用题专题总览」对应筛选。
+    </div>
+  </div>
+
+  <script src="js/oly-syllabus.js"></script>
+  <script src="cats.js"></script>
+  <script>
+  (function(){
+    var GRADES = ["一年级","二年级","三年级","四年级","五年级","六年级"];
+    var SYL = window.OLY_SYLLABUS || {};
+    var CATS = window.CATS, OTHER = window.CAT_OTHER;
+    function classify(name){
+      for(var i=0;i<CATS.length;i++) for(var j=0;j<CATS[i].kw.length;j++)
+        if(name.indexOf(CATS[i].kw[j])>=0) return CATS[i];
+      return OTHER;
+    }
+
+    // 统计每个年级的类别计数
+    var perGrade = GRADES.map(function(g,gi){
+      var counts = {};
+      (SYL[g]||[]).forEach(function(it){ var c=classify(it.t); counts[c.name]=(counts[c.name]||0)+1; });
+      return { grade:g, gk:gi+1, counts:counts };
+    });
+
+    // 图例
+    var legend = document.getElementById("legend");
+    CATS.concat([OTHER]).forEach(function(c){
+      var s=document.createElement("span");
+      s.innerHTML='<i style="background:'+c.color+'"></i>'+c.name;
+      legend.appendChild(s);
+    });
+
+    // SVG 布局
+    var W=1000, rowH=150, top=70, spineX=120;
+    var H = top + GRADES.length*rowH + 40;
+    var svg = document.getElementById("map");
+    svg.setAttribute("viewBox","0 0 "+W+" "+H);
+
+    function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+
+    var svgNS="http://www.w3.org/2000/svg";
+    function el(tag,attrs,text){
+      var e=document.createElementNS(svgNS,tag);
+      for(var k in attrs) e.setAttribute(k,attrs[k]);
+      if(text!=null) e.textContent=text;
+      return e;
+    }
+
+    // 主干连线
+    svg.appendChild(el("line",{x1:spineX,y1:top-10,x2:spineX,y2:top+GRADES.length*rowH-80,stroke:"#cdd8ee","stroke-width":6,"stroke-linecap":"round"}));
+
+    perGrade.forEach(function(row,idx){
+      var cy = top + idx*rowH;
+      // 年级节点
+      var g = el("g",{class:"gnode"});
+      var a1 = el("a",{href:"topics.html?grade="+row.gk});
+      a1.appendChild(el("circle",{cx:spineX,cy:cy,r:30,fill:"#2f6df6"}));
+      a1.appendChild(el("text",{x:spineX,y:cy+6,"text-anchor":"middle","font-size":"15","font-weight":"700",fill:"#fff"},row.gk));
+      a1.appendChild(el("text",{x:spineX,y:cy+52,"text-anchor":"middle","font-size":"15","font-weight":"700",fill:"#1f2a44"},row.grade));
+      g.appendChild(a1);
+      svg.appendChild(g);
+
+      // 类别气泡
+      var x=spineX+70, y=cy-26, maxX=W-30;
+      Object.keys(row.counts).forEach(function(catName){
+        var cat = CATS.concat([OTHER]).filter(function(c){return c.name===catName;})[0] || OTHER;
+        var label = catName+" · "+row.counts[catName];
+        var w = label.length*13 + 26;
+        if(x+w>maxX){ x=spineX+70; y+=50; }
+        var ga = el("a",{href:"topics.html?grade="+row.gk+"&cat="+encodeURIComponent(catName)});
+        ga.appendChild(el("rect",{x:x,y:y,width:w,height:38,rx:19,fill:cat.color,"fill-opacity":0.14,stroke:cat.color,"stroke-width":1.5}));
+        ga.appendChild(el("text",{x:x+w/2,y:y+24,"text-anchor":"middle","font-size":"13","font-weight":"600",fill:cat.color},label));
+        svg.appendChild(ga);
+        x += w + 12;
+      });
+      // 连接线 年级->第一个气泡区
+      svg.appendChild(el("line",{x1:spineX+30,y1:cy,x2:spineX+70,y2:cy,stroke:"#cdd8ee","stroke-width":2}));
+    });
+  })();
+  </script>
+</body>
+</html>
